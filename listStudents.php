@@ -1,12 +1,21 @@
 <?php
 
+use Alura\Pdo\Domain\Model\Student;
+
+require_once 'vendor\autoload.php';
+
 $pathBd = __DIR__ .'/banco.sqlite';
 $pdo = new PDO('sqlite:'.$pathBd);
 
-$sqlQuery = "SELECT * FROM students";
+$statement = $pdo->query("SELECT * FROM students");
+$studentsList = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-$listStudents = $pdo->query($sqlQuery);
+foreach($studentsList as $students){
+    $list[] = new Student(
+        $students['id'],
+        $students['name'],
+        new \DateTimeImmutable($students['birth_date'])
+    );
+}
 
-$students = $listStudents->fetchObject();
-
-print_r($students);
+var_dump($list);
