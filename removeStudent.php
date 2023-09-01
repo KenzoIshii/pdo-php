@@ -1,6 +1,8 @@
 <?php
 
+use Alura\Pdo\Infrastructure\Persistance\ConnectionCreator;
+
 require_once 'vendor\autoload.php';
 
-$pdo = \Alura\Pdo\Infrastructure\Persistance\ConnectionCreator::createConnection();
+$pdo = ConnectionCreator::createConnection();
 
