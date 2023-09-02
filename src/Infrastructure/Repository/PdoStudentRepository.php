@@ -4,6 +4,7 @@ namespace Alura\Pdo\Infrastructure\Repository;
 
 use Alura\Pdo\Domain\Model\Student;
 use Alura\Pdo\Domain\Repository\StudentRepository;
+use http\Exception\RuntimeException;
 use PDO;
 
 class PdoStudentRepository implements StudentRepository
