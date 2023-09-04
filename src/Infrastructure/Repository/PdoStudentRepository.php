@@ -2,9 +2,9 @@
 
 namespace Alura\Pdo\Infrastructure\Repository;
 
+use Alura\Pdo\Domain\Model\Phone;
 use Alura\Pdo\Domain\Model\Student;
 use Alura\Pdo\Domain\Repository\StudentRepository;
-use http\Exception\RuntimeException;
 use PDO;
 
 class PdoStudentRepository implements StudentRepository
@@ -42,6 +42,7 @@ class PdoStudentRepository implements StudentRepository
 
         return $insert;
     }
+
     public function removeStudent(Student $student): bool
     {
         $statement = $this->connection->prepare("DELETE FROM students WHERE id = :id");
@@ -50,10 +51,9 @@ class PdoStudentRepository implements StudentRepository
         return $statement->execute();
     }
 
-    public function hydrateStudentList(\PDOStatement $statement)
+    public function hydrateStudentList(\PDOStatement $statement): array
     {
         $studentsList = $statement->fetchAll(PDO::FETCH_ASSOC);
-        $list = [];
 
         foreach($studentsList as $students){
             $list[] = new Student(
@@ -62,7 +62,40 @@ class PdoStudentRepository implements StudentRepository
                 new \DateTimeImmutable($students['birth_date'])
             );
         }
-
         return $list;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function studentsWithPhones(): array
+    {
+        $statement = $this->connection->query("
+            SELECT 
+                students.id, 
+                students.name, 
+                students.birth_date, 
+                phones.id as phoneId, 
+                phones.areaCode, 
+                phones.number
+            FROM 
+                students students 
+            INNER JOIN phones phones ON students.id=phones.studentId"
+        );
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $studentList = [];
+
+        foreach($result as $studentsWithPhone){
+            if(!array_key_exists($studentsWithPhone['id'], $studentList)){
+                $studentList[$studentsWithPhone['id']] = new Student(
+                    $studentsWithPhone['id'],
+                    $studentsWithPhone['name'],
+                    new \DateTimeImmutable($studentsWithPhone['birth_date'])
+                );
+            }
+            $phone = new Phone($studentsWithPhone['phoneId'], $studentsWithPhone['areaCode'], $studentsWithPhone['number']);
+            $studentList[$studentsWithPhone['id']]->addPhone($phone);
+        }
+        return $studentList;
     }
 }
